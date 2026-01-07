@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🟨 Splendor Leaderboard</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+  --bg1:#1b5e20; --bg2:#2e7d32; --bg3:#c9a227; --bg4:#f5e27a;
+  --text:#fffbe6; --glass:rgba(255,255,255,0.15);
+  --gold:#ffd700; --silver:#e0e0e0; --bronze:#cd7f32;
+}
+
+body.dark-mode {
+  --bg1:#0f3d1f; --bg2:#145a32; --bg3:#8e6f14; --bg4:#2c2c2c;
+  --glass:rgba(0,0,0,0.45);
+}
+
+body {
+  margin:0; font-family:'Poppins',sans-serif; color:var(--text);
+  background:linear-gradient(-45deg,var(--bg1),var(--bg2),var(--bg3),var(--bg4));
+  background-size:400% 400%; animation:gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+h1 {
+  text-align:center; margin:50px 0 10px;
+  font-family:'MedievalSharp',cursive;
+  font-size:3rem; cursor:pointer;
+}
+
+.controls {
+  text-align:center; margin-bottom:15px;
+}
+
+button {
+  background:rgba(0,0,0,0.35); color:#fff;
+  border:1px solid rgba(255,255,255,0.3);
+  padding:8px 14px; border-radius:20px;
+  cursor:pointer; margin:0 5px;
+}
+
+.leaderboard {
+  width:90%; max-width:900px; margin:auto;
+  background:var(--glass); border-radius:20px;
+  backdrop-filter:blur(14px); overflow:hidden;
+}
+
+table { width:100%; border-collapse:collapse; }
+th,td { padding:16px; text-align:center; }
+thead { background:rgba(255,255,255,0.25); }
+
+tr { transition:0.3s ease; }
+tr:hover { background:rgba(255,255,255,0.15); }
+
+.rank-1 td{color:var(--gold);font-weight:700}
+.rank-2 td{color:var(--silver)}
+.rank-3 td{color:var(--bronze)}
+
+.glow { box-shadow:0 0 15px rgba(255,215,0,0.8); }
+
+@keyframes celebrate {
+  0%{transform:scale(1)}
+  50%{transform:scale(1.06)}
+  100%{transform:scale(1)}
+}
+
+.celebrate { animation:celebrate 1s ease; }
+
+footer {
+  text-align:center; margin:25px;
+  opacity:0.85; font-size:0.9rem;
+}
+
+.rainbow * {
+  animation:rainbow 3s linear infinite;
+}
+
+@keyframes rainbow {
+  0%{color:red}25%{color:gold}
+  50%{color:lime}75%{color:cyan}
+  100%{color:red}
+}
+</style>
+</head>
+
+<body class="dark-mode">
+
+<h1 id="title">🟨 Splendor Leaderboard</h1>
+
+<div class="controls">
+  <button id="modeBtn">What-If: Best Game</button>
+  <button id="themeBtn">🌙</button>
+</div>
+
+<div class="leaderboard">
+<table>
+<thead>
+<tr><th>Rank</th><th>Player</th><th>Score</th></tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<footer>
+<div id="lore"></div>
+<div id="funFact"></div>
+<div>Last updated: <span id="time"></span></div>
+</footer>
+
+<script>
+const CSV =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vSYk2vlxHs2BC3k2tqa-zkKkiVn_ah4kese3XApY25jzUtISKV3YLNdsoctLgxA324jForyrRkmk1SS/pub?output=csv";
+
+let mode="top3";
+
+const facts=[
+"💎 Diamonds are temporary. Screenshots are eternal.",
+"😌 Only top 3 games count. The rest build character.",
+"🎭 Rules may change based on organiser mood.",
+"🪙 Splendor is 50% skill, 50% blaming the deck.",
+"👀 Someone always *almost* wins."
+];
+
+function titleFor(p,i){
+  if(i===0) return "👑 Merchant Prince";
+  if(p.best>=18) return "💎 Gem Hoarder";
+  if(p.avg>=14) return "🧠 Efficient Tycoon";
+  return "🃏 Aspiring Trader";
+}
+
+async function load(){
+  const res=await fetch(CSV+"&t="+Date.now());
+  const txt=await res.text();
+  const lines=txt.trim().split("\n");
+  const headers=lines[0].split(",");
+  const rows=lines.slice(1).map(r=>r.split(","));
+
+  const nameI=headers.findIndex(h=>/name/i.test(h));
+  const scoreI=headers.map((h,i)=>/score/i.test(h)?i:null).filter(i=>i!=null);
+
+  let players=rows.map(r=>{
+    const scores=scoreI.map(i=>+r[i]||0).sort((a,b)=>b-a);
+    return {
+      name:r[nameI],
+      scores,
+      best:scores[0]||0,
+      avg:(scores.reduce((a,b)=>a+b,0)/scores.length)||0,
+      total:scores.slice(0,3).reduce((a,b)=>a+b,0)
+    };
+  });
+
+  players.forEach(p=>{
+    p.score = mode==="best" ? p.best : p.total;
+  });
+
+  players.sort((a,b)=>b.score-a.score);
+
+  let last=JSON.parse(localStorage.getItem("ranks")||"{}");
+  let prevScore=null,rank=1,shown=1;
+
+  const tbody=document.getElementById("tbody");
+  tbody.innerHTML="";
+
+  players.forEach((p,i)=>{
+    if(p.score!==prevScore) shown=rank;
+    prevScore=p.score; rank++;
+
+    const tr=document.createElement("tr");
+    tr.className=`rank-${shown}`;
+
+    if(p.best>=20) tr.classList.add("glow");
+    if(last[p.name] && last[p.name]>shown) tr.classList.add("celebrate");
+
+    const rivalry = players[i+1] && Math.abs(p.score-players[i+1].score)<=2
+      ? "<br><small>⚔️ Rivalry!</small>" : "";
+
+    tr.innerHTML=`
+      <td>${shown}</td>
+      <td>${p.name}<br><small>${titleFor(p,i)}</small>${rivarly||""}</td>
+      <td title="Top games: ${p.scores.slice(0,3).join(", ")}">${p.score}</td>
+    `;
+    tbody.appendChild(tr);
+
+    last[p.name]=shown;
+  });
+
+  localStorage.setItem("ranks",JSON.stringify(last));
+
+  document.getElementById("funFact").textContent =
+    facts[Math.floor(Math.random()*facts.length)];
+
+  document.getElementById("lore").textContent =
+    `🏰 ${players[0].name} dominates the gem market this week.`;
+
+  document.getElementById("time").textContent=new Date().toLocaleString();
+}
+
+document.getElementById("modeBtn").onclick=()=>{
+  mode = mode==="top3" ? "best" : "top3";
+  document.getElementById("modeBtn").textContent =
+    mode==="top3" ? "What-If: Best Game" : "Back to Top 3";
+  load();
+};
+
+document.getElementById("themeBtn").onclick=()=>{
+  document.body.classList.toggle("dark-mode");
+};
+
+let clicks=0;
+document.getElementById("title").onclick=()=>{
+  clicks++;
+  if(clicks===5) alert("😈 Cairo reserves the right to change any rules.");
+};
+
+let keys=[];
+window.addEventListener("keydown",e=>{
+  keys.push(e.key);
+  if(keys.join("").includes("ArrowUpArrowUpArrowDownArrowDown")){
+    document.body.classList.toggle("rainbow");
+    keys=[];
+  }
+});
+
+load();
+setInterval(load,30000);
+</script>
+
+</body>
+</html>
