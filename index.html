@@ -185,7 +185,7 @@ async function load(){
 
     tr.innerHTML=`
       <td>${shown}</td>
-      <td>${p.name}<br><small>${titleFor(p,i)}</small>${rivarly||""}</td>
+      <td>${p.name}<br><small>${titleFor(p,i)}</small>${rivalry||""}</td>
       <td title="Top games: ${p.scores.slice(0,3).join(", ")}">${p.score}</td>
     `;
     tbody.appendChild(tr);
