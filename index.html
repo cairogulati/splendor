@@ -7,7 +7,31 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Poppins:wght@400;600;700&display=swap');
+/* 🎯 Score breakdown tooltip */
+.score-cell{
+  position:relative;
+  cursor:help;
+}
 
+.tooltip{
+  position:absolute;
+  bottom:120%;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.85);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:0.8rem;
+  white-space:pre-line;
+  width:260px;
+  display:none;
+  z-index:100;
+}
+
+.score-cell:hover .tooltip{
+  display:block;
+}
 :root{
   --bg1:#1b5e20; --bg2:#2e7d32; --bg3:#c9a227; --bg4:#f5e27a;
   --text:#fffbe6; --glass:rgba(255,255,255,0.15);
@@ -271,13 +295,16 @@ async function load(){
       tr.classList.add("celebrate");
 
     const rivalry =
-      players[i+1] && Math.abs(p.score-players[i+1].score)<=5
+      players[i+1] && Math.abs(p.score-players[i+1].score)<=1
       ? "<br><small>⚔️ Rivalry!</small>" : "";
 
     tr.innerHTML=`
       <td>${i+1}</td>
       <td>${p.name}${p.best>=175?"<br><small>🏅 Best Game</small>":""}${rivalry}</td>
-      <td title="${breakdown}">${p.score}</td>
+      <td class="score-cell">
+        +   ${p.score}
+        +   <div class="tooltip">${breakdown}</div>
+        + </td>
     `;
     tbody.appendChild(tr);
 
