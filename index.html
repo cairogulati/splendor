@@ -7,12 +7,12 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Poppins:wght@400;600;700&display=swap');
+
 /* 🎯 Score breakdown tooltip */
 .score-cell{
   position:relative;
   cursor:help;
 }
-
 .tooltip{
   position:absolute;
   bottom:120%;
@@ -28,10 +28,8 @@
   display:none;
   z-index:100;
 }
+.score-cell:hover .tooltip{display:block;}
 
-.score-cell:hover .tooltip{
-  display:block;
-}
 :root{
   --bg1:#1b5e20; --bg2:#2e7d32; --bg3:#c9a227; --bg4:#f5e27a;
   --text:#fffbe6; --glass:rgba(255,255,255,0.15);
@@ -66,10 +64,7 @@ h1{
   cursor:pointer;
 }
 
-.controls{
-  text-align:center;
-  margin-bottom:15px;
-}
+.controls{text-align:center;margin-bottom:15px;}
 
 button{
   background:rgba(0,0,0,0.35);
@@ -92,7 +87,7 @@ button{
 }
 
 table{width:100%;border-collapse:collapse;}
-th,td{padding:16px;text-align:center;}
+th,td{padding:16px;text-align:center;vertical-align:top;}
 thead{background:rgba(255,255,255,0.25);}
 
 tr{transition:0.3s ease;}
@@ -102,23 +97,8 @@ tr:hover{background:rgba(255,255,255,0.15);}
 .rank-2 td{color:var(--silver)}
 .rank-3 td{color:var(--bronze)}
 
-.glow{box-shadow:0 0 18px rgba(255,215,0,0.85);}
+footer{text-align:center;margin:25px;opacity:0.85;font-size:0.9rem;}
 
-@keyframes celebrate{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.06)}
-  100%{transform:scale(1)}
-}
-.celebrate{animation:celebrate 1s ease;}
-
-footer{
-  text-align:center;
-  margin:25px;
-  opacity:0.85;
-  font-size:0.9rem;
-}
-
-/* 📘 Floating Formula */
 #formulaBtn{
   position:fixed;
   bottom:20px;
@@ -154,6 +134,12 @@ footer{
 }
 
 small.muted{opacity:0.8}
+small.rivalry{
+  display:block;
+  margin-top:6px;
+  font-size:0.75rem;
+  opacity:0.9;
+}
 </style>
 </head>
 
@@ -195,18 +181,6 @@ small.muted{opacity:0.8}
 − (reserved_cards × 2)
 − max(0, total_cards − 15)
   </code>
-
-  <b>Example</b>
-  <code>
-Final Points: 16 → 160
-Point Cards: 6 → +12
-Nobles: 2 → +10
-Reserved: 0 → 0
-Total Cards: 18 → −3
-
-Final = 179
-  </code>
-
   <small class="muted">🏆 Only your <b>top 3 games</b> count.</small>
 </div>
 
@@ -231,33 +205,32 @@ function computeScore(r){
 
 async function load(){
   const res=await fetch(CSV_URL+"&t="+Date.now());
-  const txt = (await res.text()).replace(/^\uFEFF/, "");
+  const txt=(await res.text()).replace(/^\uFEFF/,"");
   const lines=txt.trim().split("\n");
-  const delimiter =
-  lines[0].includes(",") ? "," :
-  lines[0].includes(";") ? ";" :
-  "\t";
 
-  const h = lines[0].split(delimiter).map(x => x.trim());
-  const i = k => h.indexOf(k);
-  
-  const num = v => Number(v) || 0;
-  
-  const rows = lines.slice(1).map(r => {
-    const c = r.split(delimiter);
+  const delimiter =
+    lines[0].includes(",") ? "," :
+    lines[0].includes(";") ? ";" :
+    "\t";
+
+  const h=lines[0].split(delimiter).map(x=>x.trim());
+  const i=k=>h.indexOf(k);
+  const num=v=>Number(v)||0;
+
+  const rows=lines.slice(1).map(r=>{
+    const c=r.split(delimiter);
     return {
-      game: c[i("gameid")],
-      name: c[i("player_name")],
-      final_points: num(c[i("final_points")]),
-      point_cards: num(c[i("point_cards")]),
-      total_cards: num(c[i("total_cards")]),
-      reserved_cards: num(c[i("reserved_cards")]),
-      nobles: num(c[i("nobles")])
+      game:c[i("gameid")],
+      name:c[i("player_name")],
+      final_points:num(c[i("final_points")]),
+      point_cards:num(c[i("point_cards")]),
+      total_cards:num(c[i("total_cards")]),
+      reserved_cards:num(c[i("reserved_cards")]),
+      nobles:num(c[i("nobles")])
     };
   });
 
   const byPlayer={};
-
   rows.forEach(r=>{
     const score=computeScore(r);
     byPlayer[r.name]??=[];
@@ -269,17 +242,13 @@ async function load(){
     const top=games.slice(0,3);
     return {
       name,
-      games,
       top,
-      score:top.reduce((a,b)=>a+b.score,0),
-      best:top[0]?.score||0
+      score:top.reduce((a,b)=>a+b.score,0)
     };
   }).sort((a,b)=>b.score-a.score);
 
   const tbody=document.getElementById("tbody");
   tbody.innerHTML="";
-
-  let lastRanks=JSON.parse(localStorage.getItem("ranks")||"{}");
 
   players.forEach((p,i)=>{
     const breakdown=p.top.map(g=>
@@ -287,45 +256,46 @@ async function load(){
 (${g.final_points}×10 + ${g.point_cards}×2 + ${g.nobles}×5 − ${g.reserved_cards}×2 − ${Math.max(0,g.total_cards-15)})`
     ).join("\n\n");
 
+    let rivalry="";
+    if(i<3){
+      const above=players[i-1];
+      const below=players[i+1];
+
+      if(above && Math.abs(p.score-above.score)<=3){
+        rivalry=`<small class="rivalry">😬 ${above.score-p.score} pt behind ${above.name}</small>`;
+      }
+      if(below && Math.abs(p.score-below.score)<=3){
+        rivalry=`<small class="rivalry">🔥 ${p.score-below.score} pt ahead of ${below.name}</small>`;
+      }
+    }
+
     const tr=document.createElement("tr");
     tr.className=`rank-${i+1}`;
 
-    if(p.best>=175) tr.classList.add("glow");
-    if(lastRanks[p.name] && lastRanks[p.name]>i+1)
-      tr.classList.add("celebrate");
-
-    const rivalry =
-      players[i+1] && Math.abs(p.score-players[i+1].score)<=1
-      ? "<br><small>⚔️ Rivalry!</small>" : "";
-
     tr.innerHTML=`
-      <td>${i+1}</td>
-      <td>${p.name}${p.best>=175?"<br><small>🏅 Best Game</small>":""}${rivalry}</td>
+      <td>
+        ${i+1}
+        ${rivalry}
+      </td>
+      <td>${p.name}</td>
       <td class="score-cell">
-        +   ${p.score}
-        +   <div class="tooltip">${breakdown}</div>
-        + </td>
+        ${p.score}
+        <div class="tooltip">${breakdown}</div>
+      </td>
     `;
     tbody.appendChild(tr);
-
-    lastRanks[p.name]=i+1;
   });
-
-  localStorage.setItem("ranks",JSON.stringify(lastRanks));
 
   document.getElementById("funFact").textContent =
     facts[Math.floor(Math.random()*facts.length)];
-
   document.getElementById("lore").textContent =
     `🏰 ${players[0].name} currently dominates the gem market.`;
-
   document.getElementById("time").textContent=new Date().toLocaleString();
 }
 
 document.getElementById("themeBtn").onclick=()=>{
   document.body.classList.toggle("dark-mode");
 };
-
 document.getElementById("formulaBtn").onclick=()=>{
   const p=document.getElementById("formulaPanel");
   p.style.display=p.style.display==="block"?"none":"block";
