@@ -207,7 +207,7 @@ function computeScore(r){
 
 async function load(){
   const res=await fetch(CSV_URL+"&t="+Date.now());
-  const txt=await res.text();
+  const txt = (await res.text()).replace(/^\uFEFF/, "");
   const lines=txt.trim().split("\n");
   const delimiter =
   lines[0].includes(",") ? "," :
