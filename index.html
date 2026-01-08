@@ -8,87 +8,128 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Poppins:wght@400;600;700&display=swap');
 
-:root {
+:root{
   --bg1:#1b5e20; --bg2:#2e7d32; --bg3:#c9a227; --bg4:#f5e27a;
   --text:#fffbe6; --glass:rgba(255,255,255,0.15);
-  --gold:#ffd700; --silver:#e0e0e0; --bronze:#cd7f32;
+  --gold:#ffd700; --silver:#c0c0c0; --bronze:#cd7f32;
 }
 
-body.dark-mode {
+body.dark-mode{
   --bg1:#0f3d1f; --bg2:#145a32; --bg3:#8e6f14; --bg4:#2c2c2c;
   --glass:rgba(0,0,0,0.45);
 }
 
-body {
-  margin:0; font-family:'Poppins',sans-serif; color:var(--text);
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  color:var(--text);
   background:linear-gradient(-45deg,var(--bg1),var(--bg2),var(--bg3),var(--bg4));
-  background-size:400% 400%; animation:gradientShift 20s ease infinite;
+  background-size:400% 400%;
+  animation:gradientShift 20s ease infinite;
 }
 
-@keyframes gradientShift {
+@keyframes gradientShift{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
 
-h1 {
-  text-align:center; margin:50px 0 10px;
+h1{
+  text-align:center;
+  margin:45px 0 10px;
   font-family:'MedievalSharp',cursive;
-  font-size:3rem; cursor:pointer;
+  font-size:3rem;
+  cursor:pointer;
 }
 
-.controls {
-  text-align:center; margin-bottom:15px;
+.controls{
+  text-align:center;
+  margin-bottom:15px;
 }
 
-button {
-  background:rgba(0,0,0,0.35); color:#fff;
+button{
+  background:rgba(0,0,0,0.35);
+  color:#fff;
   border:1px solid rgba(255,255,255,0.3);
-  padding:8px 14px; border-radius:20px;
-  cursor:pointer; margin:0 5px;
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  margin:4px;
 }
 
-.leaderboard {
-  width:90%; max-width:900px; margin:auto;
-  background:var(--glass); border-radius:20px;
-  backdrop-filter:blur(14px); overflow:hidden;
+.leaderboard{
+  width:92%;
+  max-width:950px;
+  margin:auto;
+  background:var(--glass);
+  border-radius:22px;
+  backdrop-filter:blur(14px);
+  overflow:hidden;
 }
 
-table { width:100%; border-collapse:collapse; }
-th,td { padding:16px; text-align:center; }
-thead { background:rgba(255,255,255,0.25); }
+table{width:100%;border-collapse:collapse;}
+th,td{padding:16px;text-align:center;}
+thead{background:rgba(255,255,255,0.25);}
 
-tr { transition:0.3s ease; }
-tr:hover { background:rgba(255,255,255,0.15); }
+tr{transition:0.3s ease;}
+tr:hover{background:rgba(255,255,255,0.15);}
 
 .rank-1 td{color:var(--gold);font-weight:700}
 .rank-2 td{color:var(--silver)}
 .rank-3 td{color:var(--bronze)}
 
-.glow { box-shadow:0 0 15px rgba(255,215,0,0.8); }
+.glow{box-shadow:0 0 18px rgba(255,215,0,0.85);}
 
-@keyframes celebrate {
+@keyframes celebrate{
   0%{transform:scale(1)}
   50%{transform:scale(1.06)}
   100%{transform:scale(1)}
 }
+.celebrate{animation:celebrate 1s ease;}
 
-.celebrate { animation:celebrate 1s ease; }
-
-footer {
-  text-align:center; margin:25px;
-  opacity:0.85; font-size:0.9rem;
+footer{
+  text-align:center;
+  margin:25px;
+  opacity:0.85;
+  font-size:0.9rem;
 }
 
-.rainbow * {
-  animation:rainbow 3s linear infinite;
+/* 📘 Floating Formula */
+#formulaBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  font-size:22px;
 }
 
-@keyframes rainbow {
-  0%{color:red}25%{color:gold}
-  50%{color:lime}75%{color:cyan}
-  100%{color:red}
+#formulaPanel{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+  width:360px;
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  border-radius:18px;
+  padding:18px;
+  display:none;
+  text-align:left;
+  z-index:10;
 }
+
+#formulaPanel code{
+  display:block;
+  background:rgba(0,0,0,0.35);
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+  font-size:0.85rem;
+  white-space:pre-line;
+}
+
+small.muted{opacity:0.8}
 </style>
 </head>
 
@@ -97,30 +138,56 @@ footer {
 <h1 id="title">🟨 Splendor Leaderboard</h1>
 
 <div class="controls">
-  <button id="modeBtn">What-If: Best Game</button>
   <button id="themeBtn">🌙</button>
 </div>
 
 <div class="leaderboard">
 <table>
 <thead>
-<tr><th>Rank</th><th>Player</th><th>Score</th></tr>
+<tr>
+  <th>Rank</th>
+  <th>Player</th>
+  <th>Score</th>
+</tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 </div>
 
 <footer>
-<div id="lore"></div>
-<div id="funFact"></div>
-<div>Last updated: <span id="time"></span></div>
+  <div id="lore"></div>
+  <div id="funFact"></div>
+  <div>Last updated: <span id="time"></span></div>
 </footer>
 
-<script>
-const CSV =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vSYk2vlxHs2BC3k2tqa-zkKkiVn_ah4kese3XApY25jzUtISKV3YLNdsoctLgxA324jForyrRkmk1SS/pub?output=csv";
+<button id="formulaBtn">📘</button>
 
-let mode="top3";
+<div id="formulaPanel">
+  <h3>🧮 How scoring works (per game)</h3>
+  <code>
+(final_points × 10)
++ (point_cards × 2)
++ (nobles × 5)
+− (reserved_cards × 2)
+− max(0, total_cards − 15)
+  </code>
+
+  <b>Example</b>
+  <code>
+Final Points: 16 → 160
+Point Cards: 6 → +12
+Nobles: 2 → +10
+Reserved: 0 → 0
+Total Cards: 18 → −3
+
+Final = 179
+  </code>
+
+  <small class="muted">🏆 Only your <b>top 3 games</b> count.</small>
+</div>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzp7jnhCy8rnh7A604KCJHKLNw0CY20C858GOyvBOrhMVlKqKUKPzYTgO0l4so8iLhqFbuQehSSg6N/pub?output=csv";
 
 const facts=[
 "💎 Diamonds are temporary. Screenshots are eternal.",
@@ -130,105 +197,112 @@ const facts=[
 "👀 Someone always *almost* wins."
 ];
 
-function titleFor(p,i){
-  if(i===0) return "👑 Merchant Prince";
-  if(p.best>=18) return "💎 Gem Hoarder";
-  if(p.avg>=14) return "🧠 Efficient Tycoon";
-  return "🃏 Aspiring Trader";
+function computeScore(r){
+  return (r.final_points*10)
+    + (r.point_cards*2)
+    + (r.nobles*5)
+    - (r.reserved_cards*2)
+    - Math.max(0, r.total_cards-15);
 }
 
 async function load(){
-  const res=await fetch(CSV+"&t="+Date.now());
+  const res=await fetch(CSV_URL+"&t="+Date.now());
   const txt=await res.text();
   const lines=txt.trim().split("\n");
-  const headers=lines[0].split(",");
-  const rows=lines.slice(1).map(r=>r.split(","));
+  const h=lines[0].split(",");
 
-  const nameI=headers.findIndex(h=>/name/i.test(h));
-  const scoreI=headers.map((h,i)=>/score/i.test(h)?i:null).filter(i=>i!=null);
+  const i=k=>h.indexOf(k);
 
-  let players=rows.map(r=>{
-    const scores=scoreI.map(i=>+r[i]||0).sort((a,b)=>b-a);
+  const rows=lines.slice(1).map(r=>{
+    const c=r.split(",");
     return {
-      name:r[nameI],
-      scores,
-      best:scores[0]||0,
-      avg:(scores.reduce((a,b)=>a+b,0)/scores.length)||0,
-      total:scores.slice(0,3).reduce((a,b)=>a+b,0)
+      game:c[i("gameid")],
+      name:c[i("player_name")],
+      final_points:+c[i("final_points")],
+      point_cards:+c[i("point_cards")],
+      total_cards:+c[i("total_cards")],
+      reserved_cards:+c[i("reserved_cards")],
+      nobles:+c[i("nobles")]
     };
   });
 
-  players.forEach(p=>{
-    p.score = mode==="best" ? p.best : p.total;
+  const byPlayer={};
+
+  rows.forEach(r=>{
+    const score=computeScore(r);
+    byPlayer[r.name]??=[];
+    byPlayer[r.name].push({...r,score});
   });
 
-  players.sort((a,b)=>b.score-a.score);
-
-  let last=JSON.parse(localStorage.getItem("ranks")||"{}");
-  let prevScore=null,rank=1,shown=1;
+  const players=Object.entries(byPlayer).map(([name,games])=>{
+    games.sort((a,b)=>b.score-a.score);
+    const top=games.slice(0,3);
+    return {
+      name,
+      games,
+      top,
+      score:top.reduce((a,b)=>a+b.score,0),
+      best:top[0]?.score||0
+    };
+  }).sort((a,b)=>b.score-a.score);
 
   const tbody=document.getElementById("tbody");
   tbody.innerHTML="";
 
+  let lastRanks=JSON.parse(localStorage.getItem("ranks")||"{}");
+
   players.forEach((p,i)=>{
-    if(p.score!==prevScore) shown=rank;
-    prevScore=p.score; rank++;
+    const breakdown=p.top.map(g=>
+      `Game ${g.game}: ${g.score}
+(${g.final_points}×10 + ${g.point_cards}×2 + ${g.nobles}×5 − ${g.reserved_cards}×2 − ${Math.max(0,g.total_cards-15)})`
+    ).join("\n\n");
 
     const tr=document.createElement("tr");
-    tr.className=`rank-${shown}`;
+    tr.className=`rank-${i+1}`;
 
-    if(p.best>=20) tr.classList.add("glow");
-    if(last[p.name] && last[p.name]>shown) tr.classList.add("celebrate");
+    if(p.best>=175) tr.classList.add("glow");
+    if(lastRanks[p.name] && lastRanks[p.name]>i+1)
+      tr.classList.add("celebrate");
 
-    const rivalry = players[i+1] && Math.abs(p.score-players[i+1].score)<=2
+    const rivalry =
+      players[i+1] && Math.abs(p.score-players[i+1].score)<=5
       ? "<br><small>⚔️ Rivalry!</small>" : "";
 
     tr.innerHTML=`
-      <td>${shown}</td>
-      <td>${p.name}<br><small>${titleFor(p,i)}</small>${rivalry||""}</td>
-      <td title="Top games: ${p.scores.slice(0,3).join(", ")}">${p.score}</td>
+      <td>${i+1}</td>
+      <td>${p.name}${p.best>=175?"<br><small>🏅 Best Game</small>":""}${rivalry}</td>
+      <td title="${breakdown}">${p.score}</td>
     `;
     tbody.appendChild(tr);
 
-    last[p.name]=shown;
+    lastRanks[p.name]=i+1;
   });
 
-  localStorage.setItem("ranks",JSON.stringify(last));
+  localStorage.setItem("ranks",JSON.stringify(lastRanks));
 
   document.getElementById("funFact").textContent =
     facts[Math.floor(Math.random()*facts.length)];
 
   document.getElementById("lore").textContent =
-    `🏰 ${players[0].name} dominates the gem market this week.`;
+    `🏰 ${players[0].name} currently dominates the gem market.`;
 
   document.getElementById("time").textContent=new Date().toLocaleString();
 }
-
-document.getElementById("modeBtn").onclick=()=>{
-  mode = mode==="top3" ? "best" : "top3";
-  document.getElementById("modeBtn").textContent =
-    mode==="top3" ? "What-If: Best Game" : "Back to Top 3";
-  load();
-};
 
 document.getElementById("themeBtn").onclick=()=>{
   document.body.classList.toggle("dark-mode");
 };
 
-let clicks=0;
-document.getElementById("title").onclick=()=>{
-  clicks++;
-  if(clicks===3) alert("😈 Cutie & Cairo reserve the right to change any rules.");
+document.getElementById("formulaBtn").onclick=()=>{
+  const p=document.getElementById("formulaPanel");
+  p.style.display=p.style.display==="block"?"none":"block";
 };
 
-let keys=[];
-window.addEventListener("keydown",e=>{
-  keys.push(e.key);
-  if(keys.join("").includes("ArrowUpArrowUpArrowDownArrowDown")){
-    document.body.classList.toggle("rainbow");
-    keys=[];
-  }
-});
+let clicks=0;
+document.getElementById("title").onclick=()=>{
+  if(++clicks===3)
+    alert("😈 Cutie & Cairo reserve the right to change any rules.");
+};
 
 load();
 setInterval(load,30000);
