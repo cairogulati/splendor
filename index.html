@@ -209,20 +209,26 @@ async function load(){
   const res=await fetch(CSV_URL+"&t="+Date.now());
   const txt=await res.text();
   const lines=txt.trim().split("\n");
-  const h=lines[0].split(",");
+  const delimiter =
+  lines[0].includes(",") ? "," :
+  lines[0].includes(";") ? ";" :
+  "\t";
 
-  const i=k=>h.indexOf(k);
-
-  const rows=lines.slice(1).map(r=>{
-    const c=r.split(",");
+  const h = lines[0].split(delimiter).map(x => x.trim());
+  const i = k => h.indexOf(k);
+  
+  const num = v => Number(v) || 0;
+  
+  const rows = lines.slice(1).map(r => {
+    const c = r.split(delimiter);
     return {
-      game:c[i("gameid")],
-      name:c[i("player_name")],
-      final_points:+c[i("final_points")],
-      point_cards:+c[i("point_cards")],
-      total_cards:+c[i("total_cards")],
-      reserved_cards:+c[i("reserved_cards")],
-      nobles:+c[i("nobles")]
+      game: c[i("gameid")],
+      name: c[i("player_name")],
+      final_points: num(c[i("final_points")]),
+      point_cards: num(c[i("point_cards")]),
+      total_cards: num(c[i("total_cards")]),
+      reserved_cards: num(c[i("reserved_cards")]),
+      nobles: num(c[i("nobles")])
     };
   });
 
