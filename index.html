@@ -239,7 +239,7 @@ async function load(){
 
   const players=Object.entries(byPlayer).map(([name,games])=>{
     games.sort((a,b)=>b.score-a.score);
-    const top=games.slice(0,3);
+    const top=games.slice(0,5);
     return {
       name,
       top,
